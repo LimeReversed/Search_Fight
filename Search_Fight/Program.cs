@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Search_Fight
 {
@@ -7,26 +8,82 @@ namespace Search_Fight
     {
         static void Main(string[] args)
         {
+            if (args.Length < 1)
+            {
+                Console.WriteLine("No arguments given");
+                Console.ReadKey();
+                return;
+            }
+
             GoogleSearcher googleSearcher = new GoogleSearcher();
             BingSearcher bingSearcher = new BingSearcher();
 
-            List<SearchResult> googleSearchResults = googleSearcher.SearchMultiple(args);
-            List<SearchResult> bingearchResults = bingSearcher.SearchMultiple(args);
+            List<EngineSercher> allSearchers = new List<EngineSercher> 
+            { 
+                googleSearcher,
+                bingSearcher
+            };
 
-            Console.WriteLine(args[0] + " " + args[1]);
+            List<SearchResult> winners = new List<SearchResult>();
+
+            foreach (EngineSercher el in allSearchers)
+            {
+                List<SearchResult> searchResults = el.SearchMultiple(args);
+                Console.WriteLine(FormatSearchResult(searchResults, el.EngineName));
+                SearchResult engineWinner = GetWinner(searchResults);
+                winners.Add(engineWinner);
+                Console.WriteLine($"{el.EngineName} winner: " + engineWinner.SearchWord + "\n");
+            }
+
+            var winner = GetWinner(winners);
+
+            Console.WriteLine($"Total Winner: {winner.SearchWord}");
+            Console.ReadKey();
+
         }
 
-        
+        /// <summary>
+        /// Formats the search result so that it can be displayed as a string. 
+        /// </summary>
+        /// <param name="result"></param>
+        /// <param name="engine"></param>
+        /// <returns></returns>
+        public static string FormatSearchResult(List<SearchResult> result, string engine)
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.Append(engine + ": ");
+
+            foreach (SearchResult el in result)
+            {
+                builder.Append($"\n {el.SearchWord}: {el.SearchHits}");
+            }
+            builder.Append("\n");
+
+            return builder.ToString();
+        }
+
+        public static SearchResult GetWinner(List<SearchResult> result)
+        {
+            SearchResult currentLeader = result[0];
+
+            foreach (SearchResult el in result)
+            {
+                if (el.SearchHits > currentLeader.SearchHits)
+                {
+                    currentLeader = el;
+                }
+            }
+
+            return currentLeader;
+        }
     }
 
     class SearchResult
     {
-        public string SearchEngine { get; private set; }
         public string SearchWord { get; private set; }
         public int SearchHits { get; private set; }
-        public SearchResult(string searchEngine, string searchWord, int searchHits)
+        public SearchResult(string searchWord, int searchHits)
         {
-            SearchEngine = searchEngine;
             SearchWord = searchWord;
             SearchHits = searchHits;
         }
@@ -40,6 +97,8 @@ namespace Search_Fight
 
     abstract class EngineSercher
     {
+        public string EngineName { get; protected set; }
+
         public SearchResult Search(string searchWord)
         {
             searchWord = searchWord == null ? "" : searchWord.Trim();
@@ -78,12 +137,13 @@ namespace Search_Fight
         public GoogleSearcher()
         {
             // Code for establishing connection with Google
+            EngineName = "Google";
         }
 
         protected override SearchResult ExecuteSearch(string searchWord)
         {
             // Code for performing Google search. But right now just creating Mock data. 
-            return new SearchResult("Google", searchWord, MockCreator.r.Next());
+            return new SearchResult(searchWord, MockCreator.r.Next());
         }
     }
 
@@ -92,12 +152,13 @@ namespace Search_Fight
         public BingSearcher()
         {
             // Code for establishing connection with Bing
+            EngineName = "Bing";
         }
 
         protected override SearchResult ExecuteSearch(string searchWord)
         {
             // Code for performing Bing search. But right now just creating Mock data. 
-            return new SearchResult("Bing", searchWord, MockCreator.r.Next());
+            return new SearchResult(searchWord, MockCreator.r.Next());
         }
     }
 }
