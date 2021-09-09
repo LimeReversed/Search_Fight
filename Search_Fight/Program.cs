@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Search_Fight
 {
@@ -10,7 +13,7 @@ namespace Search_Fight
         {
             if (args.Length < 1)
             {
-                Console.WriteLine("No arguments given");
+                Console.WriteLine("No search words given as arguments");
                 Console.ReadKey();
                 return;
             }
@@ -18,8 +21,8 @@ namespace Search_Fight
             GoogleSearcher googleSearcher = new GoogleSearcher();
             BingSearcher bingSearcher = new BingSearcher();
 
-            List<EngineSercher> allSearchers = new List<EngineSercher> 
-            { 
+            List<EngineSercher> allSearchers = new List<EngineSercher>
+            {
                 googleSearcher,
                 bingSearcher
             };
@@ -50,6 +53,11 @@ namespace Search_Fight
         /// <returns></returns>
         public static string FormatSearchResult(List<SearchResult> result, string engine)
         {
+            if (result == null || result.Count < 1)
+            {
+                throw new NullReferenceException("List is null or empty");
+            }
+
             StringBuilder builder = new StringBuilder();
             builder.Append(engine + ": ");
 
@@ -62,11 +70,16 @@ namespace Search_Fight
             return builder.ToString();
         }
 
-        public static SearchResult GetWinner(List<SearchResult> result)
+        public static SearchResult GetWinner(List<SearchResult> list)
         {
-            SearchResult currentLeader = result[0];
+            if (list == null || list.Count < 1)
+            {
+                throw new NullReferenceException("List is null or empty");
+            }
 
-            foreach (SearchResult el in result)
+            SearchResult currentLeader = list[0];
+
+            foreach (SearchResult el in list)
             {
                 if (el.SearchHits > currentLeader.SearchHits)
                 {
@@ -136,8 +149,8 @@ namespace Search_Fight
     {
         public GoogleSearcher()
         {
-            // Code for establishing connection with Google
             EngineName = "Google";
+            // Code for establishing connection with Google
         }
 
         protected override SearchResult ExecuteSearch(string searchWord)
@@ -151,8 +164,8 @@ namespace Search_Fight
     {
         public BingSearcher()
         {
-            // Code for establishing connection with Bing
             EngineName = "Bing";
+            // Code for establishing connection with Bing
         }
 
         protected override SearchResult ExecuteSearch(string searchWord)

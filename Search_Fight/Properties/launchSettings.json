@@ -2,7 +2,7 @@
   "profiles": {
     "Search_Fight": {
       "commandName": "Project",
-      "commandLineArgs": "Argument hey"
+      "commandLineArgs": "ArgumentOne ArgumentTwo"
     }
   }
 }
